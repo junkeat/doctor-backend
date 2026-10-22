@@ -14,6 +14,7 @@ HealthLink is a Laravel API for finding doctors and booking patient consultation
 
    ```sql
    CREATE DATABASE healthlink;
+   CREATE DATABASE healthlink_test; -- FOR FEATURE TESTS (OPTIONAL)
    ```
 
 3. Copy `.env.example` to `.env`, then set `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` to match your PostgreSQL setup.
@@ -28,6 +29,8 @@ HealthLink is a Laravel API for finding doctors and booking patient consultation
    ```bash
    php artisan migrate --seed
    ```
+
+   PHPUnit uses the separate `healthlink_test` database and runs `migrate:fresh`; configure the same PostgreSQL credentials in `.env` so tests do not alter `healthlink`.
 
 5. Start the API server:
 
