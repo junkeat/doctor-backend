@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class DoctorController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * List available doctors.
      */
     public function index(): AnonymousResourceCollection
     {

@@ -19,6 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Scramble is local-only by default; define the viewApiDocs gate here to restrict production access.
     }
 }

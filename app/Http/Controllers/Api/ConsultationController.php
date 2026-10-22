@@ -10,6 +10,10 @@ use App\Http\Resources\ConsultationResource;
 use App\Models\Consultation;
 use App\Support\CurrentPatient;
 use Carbon\CarbonImmutable;
+use Dedoc\Scramble\Attributes\BodyParameter;
+use Dedoc\Scramble\Attributes\Endpoint;
+use Dedoc\Scramble\Attributes\QueryParameter;
+use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -17,6 +21,9 @@ use Illuminate\Validation\ValidationException;
 
 class ConsultationController extends Controller
 {
+    /**
+     * List my consultations.
+     */
     public function index(
         IndexConsultationsRequest $request,
         CurrentPatient $currentPatient,
@@ -38,6 +45,9 @@ class ConsultationController extends Controller
         return ConsultationResource::collection($consultations);
     }
 
+    /**
+     * Book a consultation.
+     */
     public function store(
         StoreConsultationRequest $request,
         CurrentPatient $currentPatient,
@@ -71,6 +81,9 @@ class ConsultationController extends Controller
             ->setStatusCode(201);
     }
 
+    /**
+     * Determine whether the database error is the doctor booking constraint.
+     */
     private function isDoctorBookingConflict(QueryException $exception): bool
     {
         $sqlState = $exception->errorInfo[0] ?? $exception->getCode();

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Enums\ConsultationType;
 use App\Models\Consultation;
 use App\Models\Doctor;
 use Carbon\CarbonImmutable;
@@ -16,9 +17,7 @@ class StoreConsultationRequest extends FormRequest
         return true;
     }
 
-    /**
-     * @return array<string, array<int, mixed>>
-     */
+    /** @return array<string, array<int, mixed>> */
     public function rules(): array
     {
         return [
@@ -27,7 +26,7 @@ class StoreConsultationRequest extends FormRequest
                 'integer',
                 Rule::exists('doctors', 'id')->where('is_active', true),
             ],
-            'type' => ['required', Rule::in(['chat', 'video'])],
+            'type' => ['required', Rule::enum(ConsultationType::class)],
             'scheduled_at' => ['required', 'date', 'after:now'],
             'reason' => ['required', 'string', 'max:500'],
         ];
@@ -40,7 +39,7 @@ class StoreConsultationRequest extends FormRequest
     {
         return [
             'doctor_id.exists' => 'The selected doctor does not exist or is inactive.',
-            'type.in' => 'The consultation type must be chat or video.',
+            'type.enum' => 'The consultation type must be chat or video.',
             'scheduled_at.date' => 'The scheduled time must be a valid date.',
             'scheduled_at.after' => 'The scheduled time must be in the future.',
             'reason.max' => 'The reason may not be greater than 500 characters.',

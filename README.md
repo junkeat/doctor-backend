@@ -40,7 +40,11 @@ HealthLink is a Laravel API for finding doctors and booking patient consultation
 
    The API is available at `http://127.0.0.1:8000`. CORS allows requests from `http://localhost:4200`.
 
-## API routes
+   ## API documentation
+
+   Scramble serves the interactive API documentation at [`/docs/api`](http://127.0.0.1:8000/docs/api) and the OpenAPI specification at [`/docs/api.json`](http://127.0.0.1:8000/docs/api.json). Documentation routes are available locally by default.
+
+   ## API routes
 
 All endpoints return JSON resources under a `data` key. Validation errors return HTTP `422` with a `message` and field-specific `errors`.
 
