@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Enums\ConsultationType;
 use App\Models\Consultation;
 use App\Models\Doctor;
-use App\Models\Patient;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +21,7 @@ class ConsultationFactory extends Factory
     public function definition(): array
     {
         return [
-            'patient_id' => Patient::factory(),
+            'user_id' => User::factory(),
             'doctor_id' => Doctor::factory(),
             'type' => fake()->randomElement(ConsultationType::cases())->value,
             'scheduled_at' => fake()->dateTimeBetween('now', '+1 month'),

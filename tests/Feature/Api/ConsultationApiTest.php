@@ -6,16 +6,22 @@ use App\Enums\ConsultationStatus;
 use App\Enums\ConsultationType;
 use App\Models\Consultation;
 use App\Models\Doctor;
-use App\Models\Patient;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ConsultationApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_creates_consultation_for_current_patient_and_returns_doctor(): void
+    public function test_requires_authentication_to_access_consultations(): void
+    {
+        $this->getJson('/api/consultations')->assertUnauthorized();
+    }
+
+    public function test_creates_consultation_for_current_user_and_returns_doctor(): void
     {
         $this->freezeApiTime();
         $john = $this->createJohn();
@@ -32,15 +38,15 @@ class ConsultationApiTest extends TestCase
         $response->assertCreated()
             ->assertJsonPath('data.type', 'chat')
             ->assertJsonPath('data.status', 'scheduled')
-            ->assertJsonPath('data.patient.id', $john->id)
-            ->assertJsonPath('data.patient.name', 'John')
-            ->assertJsonPath('data.patient.email', 'john@example.com')
+            ->assertJsonPath('data.user.id', $john->id)
+            ->assertJsonPath('data.user.name', 'John')
+            ->assertJsonPath('data.user.email', 'john@example.com')
             ->assertJsonPath('data.doctor.id', $doctor->id)
             ->assertJsonPath('data.doctor.name', 'Dr. Sarah Lim')
             ->assertJsonPath('data.doctor.specialty', 'General Practitioner');
 
         $this->assertDatabaseHas('consultations', [
-            'patient_id' => $john->id,
+            'user_id' => $john->id,
             'doctor_id' => $doctor->id,
             'type' => ConsultationType::Chat->value,
             'status' => ConsultationStatus::Scheduled->value,
@@ -48,6 +54,31 @@ class ConsultationApiTest extends TestCase
             'reason' => 'Discuss recurring headaches.',
         ]);
         $this->assertDatabaseCount('consultations', 1);
+    }
+
+    public function test_uses_authenticated_user_instead_of_a_client_supplied_user_id(): void
+    {
+        $this->freezeApiTime();
+        $john = $this->createJohn();
+        $otherUser = User::factory()->create();
+        $doctor = $this->createDoctor();
+
+        $response = $this->postJson('/api/consultations', [
+            ...$this->bookingPayload($doctor),
+            'user_id' => $otherUser->id,
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.user.id', $john->id);
+
+        $this->assertDatabaseHas('consultations', [
+            'user_id' => $john->id,
+            'doctor_id' => $doctor->id,
+        ]);
+        $this->assertDatabaseMissing('consultations', [
+            'user_id' => $otherUser->id,
+            'doctor_id' => $doctor->id,
+        ]);
     }
 
     public function test_rejects_reason_longer_than_500_characters(): void
@@ -143,7 +174,7 @@ class ConsultationApiTest extends TestCase
         $doctor = $this->createDoctor();
         $scheduledAt = now()->addDay()->setTime(10, 0);
         Consultation::factory()->create([
-            'patient_id' => $john->id,
+            'user_id' => $john->id,
             'doctor_id' => $doctor->id,
             'type' => ConsultationType::Chat,
             'scheduled_at' => $scheduledAt,
@@ -170,7 +201,7 @@ class ConsultationApiTest extends TestCase
         $doctor = $this->createDoctor();
         $scheduledAt = now()->addDay()->setTime(10, 0);
         $racingBooking = [
-            'patient_id' => $john->id,
+            'user_id' => $john->id,
             'doctor_id' => $doctor->id,
             'type' => ConsultationType::Chat,
             'scheduled_at' => $scheduledAt,
@@ -199,24 +230,24 @@ class ConsultationApiTest extends TestCase
             );
     }
 
-    public function test_returns_only_consultations_for_the_current_patient(): void
+    public function test_returns_only_consultations_for_the_authenticated_user(): void
     {
         $this->freezeApiTime();
         $john = $this->createJohn();
-        $otherPatient = Patient::factory()->create([
-            'name' => 'Other Patient',
+        $otherUser = User::factory()->create([
+            'name' => 'Other User',
             'email' => 'other@example.com',
         ]);
         $doctor = $this->createDoctor();
 
         Consultation::factory()->create([
-            'patient_id' => $john->id,
+            'user_id' => $john->id,
             'doctor_id' => $doctor->id,
             'scheduled_at' => now()->addDays(2)->setTime(10, 0),
             'reason' => 'John appointment.',
         ]);
         Consultation::factory()->create([
-            'patient_id' => $otherPatient->id,
+            'user_id' => $otherUser->id,
             'doctor_id' => $doctor->id,
             'scheduled_at' => now()->addDays(3)->setTime(10, 0),
             'reason' => 'Other appointment.',
@@ -227,9 +258,9 @@ class ConsultationApiTest extends TestCase
         $response->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.reason', 'John appointment.')
-            ->assertJsonPath('data.0.patient.id', $john->id)
-            ->assertJsonPath('data.0.patient.name', 'John')
-            ->assertJsonPath('data.0.patient.email', 'john@example.com')
+            ->assertJsonPath('data.0.user.id', $john->id)
+            ->assertJsonPath('data.0.user.name', 'John')
+            ->assertJsonPath('data.0.user.email', 'john@example.com')
             ->assertJsonPath('data.0.doctor.name', 'Dr. Sarah Lim')
             ->assertJsonPath('data.0.doctor.specialty', 'General Practitioner');
     }
@@ -241,14 +272,14 @@ class ConsultationApiTest extends TestCase
         $doctor = $this->createDoctor();
 
         Consultation::factory()->create([
-            'patient_id' => $john->id,
+            'user_id' => $john->id,
             'doctor_id' => $doctor->id,
             'status' => ConsultationStatus::Completed,
             'scheduled_at' => now()->subDay(),
             'reason' => 'Completed appointment.',
         ]);
         Consultation::factory()->create([
-            'patient_id' => $john->id,
+            'user_id' => $john->id,
             'doctor_id' => $doctor->id,
             'status' => ConsultationStatus::Scheduled,
             'scheduled_at' => now()->addDay(),
@@ -268,17 +299,18 @@ class ConsultationApiTest extends TestCase
         $this->travelTo(now()->setDate(2026, 10, 22)->setTime(12, 0));
     }
 
-    private function createJohn(): Patient
+    private function createJohn(): User
     {
-        $patient = Patient::factory()->create([
+        $user = User::factory()->create([
             'id' => 1,
             'name' => 'John',
             'email' => 'john@example.com',
         ]);
 
-        DB::statement("SELECT setval(pg_get_serial_sequence('patients', 'id'), 1, true)");
+        DB::statement("SELECT setval(pg_get_serial_sequence('users', 'id'), 1, true)");
+        Sanctum::actingAs($user);
 
-        return $patient;
+        return $user;
     }
 
     private function createDoctor(): Doctor

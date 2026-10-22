@@ -13,7 +13,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\ValidationException;
-use App\Models\Patient;
 
 class ConsultationController extends Controller
 {
@@ -23,13 +22,11 @@ class ConsultationController extends Controller
     public function index(
         IndexConsultationsRequest $request,
     ): AnonymousResourceCollection {
-        $validated = $request->validated();
-
         $consultations = Consultation::query()
-            ->whereBelongsTo(Patient::findOrFail($validated['patient_id']))
+            ->where('user_id', $request->user()->getAuthIdentifier())
             ->with([
                 'doctor:id,name,specialty',
-                'patient:id,name,email',
+                'user:id,name,email',
             ])
             ->when(
                 $request->validated('status'),
@@ -55,7 +52,7 @@ class ConsultationController extends Controller
 
         try {
             $consultation = Consultation::query()->create([
-                'patient_id' => Patient::findOrFail($validated['patient_id'])->id,
+                'user_id' => $request->user()->getAuthIdentifier(),
                 'doctor_id' => $validated['doctor_id'],
                 'type' => $validated['type'],
                 'scheduled_at' => CarbonImmutable::parse(
@@ -77,7 +74,7 @@ class ConsultationController extends Controller
 
         return (new ConsultationResource($consultation->load([
             'doctor',
-            'patient:id,name,email',
+            'user:id,name,email',
         ])))
             ->response()
             ->setStatusCode(201);

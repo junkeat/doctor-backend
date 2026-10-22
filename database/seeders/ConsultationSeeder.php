@@ -6,7 +6,7 @@ use App\Enums\ConsultationStatus;
 use App\Enums\ConsultationType;
 use App\Models\Consultation;
 use App\Models\Doctor;
-use App\Models\Patient;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 
@@ -18,7 +18,7 @@ class ConsultationSeeder extends Seeder
     public function run(): void
     {
         $timezone = 'Asia/Kuala_Lumpur';
-        $patient = Patient::query()->where('email', 'john@example.com')->firstOrFail();
+        $user = User::query()->where('email', 'john@example.com')->firstOrFail();
         $consultations = [
             [
                 'doctor' => 'Dr. Sarah Lim',
@@ -51,7 +51,7 @@ class ConsultationSeeder extends Seeder
                     'scheduled_at' => $consultation['scheduled_at'],
                 ],
                 [
-                    'patient_id' => $patient->id,
+                    'user_id' => $user->id,
                     'type' => $consultation['type'],
                     'reason' => 'General consultation',
                     'status' => $consultation['status'],

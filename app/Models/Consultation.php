@@ -15,7 +15,7 @@ class Consultation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'patient_id',
+        'user_id',
         'doctor_id',
         'type',
         'scheduled_at',
@@ -32,11 +32,11 @@ class Consultation extends Model
     }
 
     /**
-     * @return BelongsTo<Patient, $this>
+     * @return BelongsTo<User, $this>
      */
-    public function patient(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Patient::class);
+        return $this->belongsTo(User::class);
     }
 
     /**

@@ -17,7 +17,6 @@ class IndexConsultationsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'patient_id' => ['required', 'integer', Rule::exists('patients', 'id')],
             'status' => ['sometimes', 'nullable', Rule::enum(ConsultationStatus::class)],
         ];
     }
