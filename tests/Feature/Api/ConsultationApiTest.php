@@ -32,6 +32,9 @@ class ConsultationApiTest extends TestCase
         $response->assertCreated()
             ->assertJsonPath('data.type', 'chat')
             ->assertJsonPath('data.status', 'scheduled')
+            ->assertJsonPath('data.patient.id', $john->id)
+            ->assertJsonPath('data.patient.name', 'John')
+            ->assertJsonPath('data.patient.email', 'john@example.com')
             ->assertJsonPath('data.doctor.id', $doctor->id)
             ->assertJsonPath('data.doctor.name', 'Dr. Sarah Lim')
             ->assertJsonPath('data.doctor.specialty', 'General Practitioner');
@@ -224,6 +227,9 @@ class ConsultationApiTest extends TestCase
         $response->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.reason', 'John appointment.')
+            ->assertJsonPath('data.0.patient.id', $john->id)
+            ->assertJsonPath('data.0.patient.name', 'John')
+            ->assertJsonPath('data.0.patient.email', 'john@example.com')
             ->assertJsonPath('data.0.doctor.name', 'Dr. Sarah Lim')
             ->assertJsonPath('data.0.doctor.specialty', 'General Practitioner');
     }

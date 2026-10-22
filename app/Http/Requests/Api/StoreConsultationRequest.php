@@ -29,6 +29,7 @@ class StoreConsultationRequest extends FormRequest
             'type' => ['required', Rule::enum(ConsultationType::class)],
             'scheduled_at' => ['required', 'date', 'after:now'],
             'reason' => ['required', 'string', 'max:500'],
+            'patient_id' => ['required', 'integer', Rule::exists('patients', 'id')],
         ];
     }
 

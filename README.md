@@ -113,6 +113,11 @@ Example response (`201 Created`):
     "scheduled_at": "2026-10-23T02:00:00.000000Z",
     "reason": "Discuss recurring headaches.",
     "status": "scheduled",
+    "patient": {
+      "id": 1,
+      "name": "John",
+      "email": "john@example.com"
+    },
     "doctor": {
       "id": 1,
       "name": "Dr. Sarah Lim",
@@ -143,6 +148,11 @@ Example response:
       "scheduled_at": "2026-09-08T02:00:00.000000Z",
       "reason": "General consultation",
       "status": "completed",
+      "patient": {
+        "id": 1,
+        "name": "John",
+        "email": "john@example.com"
+      },
       "doctor": {
         "id": 2,
         "name": "Dr. Aiman Rashid",
@@ -155,6 +165,11 @@ Example response:
       "scheduled_at": "2026-09-02T06:00:00.000000Z",
       "reason": "General consultation",
       "status": "completed",
+      "patient": {
+        "id": 1,
+        "name": "John",
+        "email": "john@example.com"
+      },
       "doctor": {
         "id": 3,
         "name": "Dr. Priya Nair",

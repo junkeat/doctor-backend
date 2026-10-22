@@ -8,12 +8,12 @@ use App\Http\Requests\Api\IndexConsultationsRequest;
 use App\Http\Requests\Api\StoreConsultationRequest;
 use App\Http\Resources\ConsultationResource;
 use App\Models\Consultation;
-use App\Support\CurrentPatient;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\ValidationException;
+use App\Models\Patient;
 
 class ConsultationController extends Controller
 {
@@ -26,7 +26,10 @@ class ConsultationController extends Controller
     ): AnonymousResourceCollection {
         $consultations = Consultation::query()
             ->whereBelongsTo($currentPatient->patient())
-            ->with('doctor:id,name,specialty')
+            ->with([
+                'doctor:id,name,specialty',
+                'patient:id,name,email',
+            ])
             ->when(
                 $request->validated('status'),
                 fn ($query, string $status) => $query->where(
@@ -46,13 +49,12 @@ class ConsultationController extends Controller
      */
     public function store(
         StoreConsultationRequest $request,
-        CurrentPatient $currentPatient,
     ): JsonResponse {
         $validated = $request->validated();
 
         try {
             $consultation = Consultation::query()->create([
-                'patient_id' => $currentPatient->patient()->id,
+                'patient_id' => Patient::findOrFail($validated['patient_id'])->id,
                 'doctor_id' => $validated['doctor_id'],
                 'type' => $validated['type'],
                 'scheduled_at' => CarbonImmutable::parse(
@@ -72,7 +74,10 @@ class ConsultationController extends Controller
             ]);
         }
 
-        return (new ConsultationResource($consultation->load('doctor')))
+        return (new ConsultationResource($consultation->load([
+            'doctor',
+            'patient:id,name,email',
+        ])))
             ->response()
             ->setStatusCode(201);
     }

@@ -18,6 +18,7 @@ class ConsultationResource extends JsonResource
             'scheduled_at' => $this->scheduled_at,
             'reason' => $this->reason,
             'status' => $this->status->value,
+            'patient' => new PatientResource($this->whenLoaded('patient')),
             'doctor' => [
                 'id' => $this->doctor->id,
                 'name' => $this->doctor->name,
