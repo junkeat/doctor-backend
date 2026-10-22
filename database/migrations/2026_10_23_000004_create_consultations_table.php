@@ -11,9 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::dropIfExists('consultations');
-        Schema::dropIfExists('patients');
-
         Schema::create('consultations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
@@ -35,25 +32,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('consultations');
-        Schema::create('patients', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamps();
-        });
-
-        Schema::create('consultations', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('doctor_id')->constrained()->cascadeOnDelete();
-            $table->string('type');
-            $table->timestamp('scheduled_at');
-            $table->string('reason', 500);
-            $table->string('status')->default('scheduled');
-            $table->timestamps();
-
-            $table->unique(['doctor_id', 'scheduled_at']);
-            $table->index(['patient_id', 'scheduled_at']);
-        });
     }
 };

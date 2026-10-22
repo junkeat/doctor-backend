@@ -24,13 +24,13 @@ HealthLink is a Laravel API for finding doctors and booking consultations. It us
    php artisan key:generate
    ```
 
-4. Run migrations and seed the doctors, sample user, and consultations:
+4. Create the development database schema and seed the doctors, sample user, and consultations:
 
    ```bash
-   php artisan migrate --seed
+   php artisan migrate:fresh --seed
    ```
 
-   The patient-to-user migration removes the old `patients` table and its consultations. Back up any data you need before applying it.
+   This command drops all tables in the configured database before recreating them. Use it only for local development or another database whose contents can be discarded.
 
    PHPUnit uses the separate `healthlink_test` database and runs `migrate:fresh`; configure the same PostgreSQL credentials in `.env` so tests do not alter `healthlink`.
 
