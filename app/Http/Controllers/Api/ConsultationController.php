@@ -22,10 +22,11 @@ class ConsultationController extends Controller
      */
     public function index(
         IndexConsultationsRequest $request,
-        CurrentPatient $currentPatient,
     ): AnonymousResourceCollection {
+        $validated = $request->validated();
+
         $consultations = Consultation::query()
-            ->whereBelongsTo($currentPatient->patient())
+            ->whereBelongsTo(Patient::findOrFail($validated['patient_id']))
             ->with([
                 'doctor:id,name,specialty',
                 'patient:id,name,email',
