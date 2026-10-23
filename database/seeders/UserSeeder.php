@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
@@ -13,11 +12,11 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::query()->firstOrCreate(
+        User::query()->updateOrCreate(
             ['email' => 'john@example.com'],
             [
                 'name' => 'John',
-                'password' => Str::random(64),
+                'password' => bcrypt('password'),
             ],
         );
     }
