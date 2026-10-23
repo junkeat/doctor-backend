@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -88,5 +89,52 @@ class AuthApiTest extends TestCase
             ->assertJsonValidationErrors(['email', 'password']);
 
         $this->assertDatabaseCount('users', 1);
+    }
+
+    public function test_logs_out_and_revokes_the_current_token(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('api')->plainTextToken;
+
+        $response = $this->withToken($token)->postJson('/api/logout');
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Logged out successfully.');
+
+        $this->assertDatabaseCount('personal_access_tokens', 0);
+
+        Auth::forgetGuards();
+
+        $this->withToken($token)
+            ->getJson('/api/consultations')
+            ->assertUnauthorized();
+    }
+
+    public function test_logout_revokes_only_the_current_token(): void
+    {
+        $user = User::factory()->create();
+        $currentToken = $user->createToken('current')->plainTextToken;
+        $otherToken = $user->createToken('other')->plainTextToken;
+
+        $this->withToken($currentToken)
+            ->postJson('/api/logout')
+            ->assertOk();
+
+        $this->assertDatabaseCount('personal_access_tokens', 1);
+
+        Auth::forgetGuards();
+
+        $this->withToken($otherToken)
+            ->getJson('/api/consultations')
+            ->assertOk();
+    }
+
+    public function test_rejects_logout_without_authentication(): void
+    {
+        $this->postJson('/api/logout')
+            ->assertUnauthorized()
+            ->assertJsonPath('message', 'Unauthenticated.');
+
+        $this->assertDatabaseCount('personal_access_tokens', 0);
     }
 }

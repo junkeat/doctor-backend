@@ -78,12 +78,24 @@ Example response:
 
 ### `POST /api/login`
 
-Use the returned Sanctum token as a bearer token in the `Authorization` header for protected endpoints. The Scramble OpenAPI documentation marks consultation endpoints as requiring bearer authentication; doctors, registration, and login remain public.
+Use the returned Sanctum token as a bearer token in the `Authorization` header for protected endpoints. The Scramble OpenAPI documentation marks consultation and logout endpoints as requiring bearer authentication; doctors, registration, and login remain public.
 
 Accepts an `email` and `password` and returns the same user-and-token response as registration. Include the returned token on protected routes:
 
 ```http
 Authorization: Bearer <token>
+```
+
+### `POST /api/logout`
+
+Revokes the current Sanctum bearer token. Include the token in the `Authorization` header.
+
+Example response:
+
+```json
+{
+  "message": "Logged out successfully."
+}
 ```
 
 ### `GET /api/doctors`

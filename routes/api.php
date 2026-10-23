@@ -15,6 +15,7 @@ Route::post('/login', [AuthController::class, 'login'])
 Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
 
 Route::middleware('auth:sanctum')->group(function (): void {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('/consultations', [ConsultationController::class, 'index'])->name('consultations.index');
     Route::post('/consultations', [ConsultationController::class, 'store'])->name('consultations.store');
 });

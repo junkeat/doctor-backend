@@ -7,7 +7,10 @@ use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Dedoc\Scramble\Attributes\Endpoint;
+use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -38,6 +41,15 @@ class AuthController extends Controller
         return response()->json([
             'user' => (new UserResource($user))->resolve(),
             'token' => $user->createToken('api')->plainTextToken,
+        ]);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logged out successfully.',
         ]);
     }
 }
